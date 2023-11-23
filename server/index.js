@@ -1,20 +1,30 @@
 //importaciones
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+
+//archivos
+import userRoute from "./../server/routes/users.js";
+import productRoute from "./../server/routes/products.js";
+import checkoutRoute from "./../server/routes/checkout.js";
+import connectDB from "./config/db.js";
 
 //inicializadores
 const app = express();
-const data = ["hola", "mundo"];
+app.use(cors());
+app.use(express.json());
+dotenv.config();
+
+connectDB();
+
+const port = process.env.BASE_URL_PORT || 3005;
 
 //rutas
-app.get("/", (req, res) => {
-  res.json({
-    msg: "este es un mensaje",
-    data: data,
-  });
-});
+app.use("/api/v1/users", userRoute);
+app.use("/api/v1/products", productRoute);
+app.use("/api/v1/checkout", checkoutRoute);
 
 //listeners
-app.listen(3005, () => {
+app.listen(port, () => {
   return console.log("servidor encendido");
 });
