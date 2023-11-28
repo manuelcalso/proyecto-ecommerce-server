@@ -53,7 +53,7 @@ const readOne = async (req, res) => {
 const create = async (req, res) => {
   const { name, currency, prices, img, description, slug } = req.body;
 
-  //console.log(req.body);
+  console.log(req.body);
 
   // A. GENERACIÓN DE PRODUCTO EN STRIPE
   // 1. CREAR EL PRODUCTO EN STRIPE
@@ -69,7 +69,7 @@ const create = async (req, res) => {
       },
     });
 
-    //console.log("product", product);
+    console.log("product", product);
 
     // 2. CREAR PRECIOS PARA EL PRODUCTO DE STRIPE
     const stripePrices = await Promise.all(
@@ -87,7 +87,7 @@ const create = async (req, res) => {
       })
     );
 
-    //console.log("stripePrices", stripePrices);
+    console.log("stripePrices", stripePrices);
 
     // 3. CREACIÓN DE PRODUCTO EN BASE DE DATOS
     // A. ADAPTACIÓN DE VARIABLE. EN LUGAR DE PASAR LOS 50 MIL PROPIEDADES. SOLO NECESITO 4 PARA LA BASE DE DATOS CON RESPECTO A PRICING.
@@ -113,31 +113,17 @@ const create = async (req, res) => {
     });
 
     return res.status(200).json({
-      msg: "Playera creada en Stripe y base de datos. ;)",
+      msg: "Producto creada en Stripe y base de datos. Lo hiciste bebé. ;)",
       data: newProductDB,
     });
   } catch (error) {
     console.log("error", error);
+
+    return res.status(500).json({
+      msg: "Hubo un problema en la creación del producto",
+      error,
+    });
   }
-
-  // 3. CREAR PRODUCTO EN BASE DE DATOS CON DATOS DE STRIPE
-  // try {
-  //   const { name } = req.body
-
-  //   const newPizza = await Pizza.create({
-  //     name,
-  //   })
-
-  //   return res.json({
-  //     msg: "Pizza creada",
-  //     data: newPizza,
-  //   })
-  // } catch (error) {
-  //   console.log(error)
-  //   res.status(500).json({
-  //     msg: "Hubo un error obteniendo los datos.",
-  //   })
-  // }
 };
 
 const edit = async (req, res) => {

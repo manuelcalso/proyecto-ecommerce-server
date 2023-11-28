@@ -8,7 +8,7 @@ const cartSchema = mongoose.Schema({
         required: true,
       },
 
-      priceId: {
+      priceID: {
         type: String,
         required: true,
       },
