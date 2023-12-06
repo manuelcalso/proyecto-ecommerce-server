@@ -25,11 +25,11 @@ const readAll = async (req, res) => {
 };
 
 const readOne = async (req, res) => {
-  const { id } = req.params;
+  const { id, slug } = req.params;
 
   try {
     const playeras = await Products.findOne({
-      _id: id,
+      slug: id,
     });
 
     if (!playeras) {
