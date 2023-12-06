@@ -7,7 +7,7 @@ dotenv.config();
 const stripeKey = stripe(process.env.STRIPE_SECRET_KEY);
 
 const createCheckoutSession = async (req, res) => {
-  console.log("accediste...");
+  console.log("accediste....");
 
   // 1. OBTENER EL USUARIO Y SU ID CON CORREO
 
