@@ -6,10 +6,7 @@ dotenv.config();
 //PRODUCCION = mongodb+srv://juancallerossol:<password>@pizzeriadb.uqyyig4.mongodb.net/ecommerce
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.BASE_URL_DB_PRODUCTION, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.BASE_URL_DB_PRODUCTION, {});
 
     console.log("Base de datos conectada.");
   } catch (error) {
