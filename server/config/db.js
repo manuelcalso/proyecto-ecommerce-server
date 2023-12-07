@@ -7,7 +7,7 @@ dotenv.config();
 //console.log("URI de la base de datos:", process.env.BASE_URL_DB_PRODUCTION);
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.BASE_URL_DB_LOCAL, {});
+    await mongoose.connect(process.env.BASE_URL_DB_PRODUCTION, {});
 
     console.log("Base de datos conectada.");
   } catch (error) {
