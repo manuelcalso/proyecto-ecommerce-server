@@ -35,8 +35,8 @@ const createCheckoutSession = async (req, res) => {
     const session = await stripeKey.checkout.sessions.create({
       line_items,
       mode: "payment",
-      success_url: "https://google.com",
-      cancel_url: "https://yahoo.com",
+      success_url: `${process.env.FRONTEND_URL}/?status=successful`,
+      cancel_url: `${process.env.FRONTEND_URL}/carrito?status=unsuccessful`,
       customer_email: foundUser.email,
     });
     //console.log("session", session);
@@ -171,4 +171,26 @@ const editCart = async (req, res) => {
   }
 };
 
-export default { createCheckoutSession, createOrder, editCart };
+const getCart = async (req, res) => {
+  const userID = req.user.id;
+
+  try {
+    const foundUser = await User.findOne({ _id: userID });
+
+    const foundcart = await Cart.findOne({
+      _id: foundUser.cart,
+    });
+
+    res.status(200).json({
+      msg: "carrito encontrado con exito",
+      cart: foundcart,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "hubo un error en servidor",
+      error,
+    });
+  }
+};
+export default { createCheckoutSession, createOrder, editCart, getCart };
