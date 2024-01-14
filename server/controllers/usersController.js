@@ -18,13 +18,10 @@ const create = async (req, res) => {
     // 1. CAPA DE CONTRASEÑA
     // ESTABLECER EL NIVEL DE DIFICULTAD DE ENCRIPTAMIENTO DEL PASSWORD
     const salt = await bcryptjs.genSalt(10);
-
     // 1A. CREAR CARRITO DE COMPRAS
     const newCart = await Cart.create({});
-
     // ENCRIPTAR EL PASSWORD
     const hashedPassword = await bcryptjs.hash(password, salt);
-    console.log("hashedPassword", hashedPassword);
 
     const newUser = await User.create({
       name,
@@ -127,9 +124,7 @@ const login = async (req, res) => {
 
 const verifyToken = async (req, res) => {
   try {
-    console.log("req.user", req.user);
     const foundUser = await User.findById(req.user.id);
-    console.log("foundUser", foundUser);
 
     return res.json({
       msg: "Datos de usuario encontrados.",

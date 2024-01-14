@@ -10,6 +10,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import userRoute from "./../server/routes/users.js";
 import productRoute from "./../server/routes/products.js";
 import checkoutRoute from "./../server/routes/checkout.js";
+import emailRoute from "./../server/routes/email.js";
 import connectDB from "./config/db.js";
 
 //inicializadores
@@ -51,6 +52,7 @@ app.use((req, res, next) => {
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/products", productRoute);
 app.use("/api/v1/checkout", checkoutRoute);
+app.use("/api/v1/email", emailRoute);
 
 //listeners
 app.listen(port, () => {

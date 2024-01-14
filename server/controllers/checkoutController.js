@@ -2,25 +2,22 @@ import dotenv from "dotenv";
 import stripe from "stripe";
 import User from "../models/Users.js";
 import Cart from "../models/Cart.js";
+import emailController from "../controllers/emailController.js";
 dotenv.config();
 
 const stripeKey = stripe(process.env.STRIPE_SECRET_KEY);
 
 const createCheckoutSession = async (req, res) => {
-  console.log("accediste....");
+  //console.log("accediste....");
 
   // 1. OBTENER EL USUARIO Y SU ID CON CORREO
 
   const userID = req.user.id;
-
   const foundUser = await User.findById(userID).lean();
-  //console.log("foundUser", foundUser);
-
+  //console.log("foundUser in checkoutcontroller", foundUser);
   const foudCart = await Cart.findById(foundUser.cart).lean().populate();
-  //console.log("foundcart", foudCart);
 
   //acomodar los datos para stripe
-
   const line_items = foudCart.products.map((productToBuy) => {
     return {
       price: productToBuy.priceID,
@@ -28,18 +25,15 @@ const createCheckoutSession = async (req, res) => {
     };
   });
 
-  //console.log("stripeKey", stripeKey);
-  //console.log("line_items", line_items);
   //CREACIÓN DE CHECKOUT EN STRIPE
   try {
     const session = await stripeKey.checkout.sessions.create({
       line_items,
       mode: "payment",
       success_url: `${process.env.FRONTEND_URL}/?status=successful`,
-      cancel_url: `${process.env.FRONTEND_URL}/carrito?status=unsuccessful`,
+      cancel_url: `${process.env.FRONTEND_URL}/products?status=unsuccessful`,
       customer_email: foundUser.email,
     });
-    //console.log("session", session);
 
     res.status(200).json({
       msg: "Accede a este link para la sesión de pago",
@@ -47,7 +41,7 @@ const createCheckoutSession = async (req, res) => {
       session,
     });
   } catch (error) {
-    console.log("error", error);
+    console.log("error:", error);
     res.status(400).json({
       msg: "Hubo un problema",
       error,
@@ -64,8 +58,6 @@ const createOrder = async (req, res) => {
     // (SIEMPRE ES ASÍ)
     const sig = req.headers["stripe-signature"];
     const endpointSecret = process.env.STRIPE_WH_SIGNING_SECRET;
-    //console.log(sig);
-    //console.log(endpointSecret);
 
     // 2. CONSTRUIR EL EVENTO CON TODOS LOS DATOS SENSIBLES DE STRIPE
     // EL EVENTO ES EL OBJETO QUE INCLUYE LOS RECIBOS Y LAS CONFIRMACIONES DE PAGO DEL USUARIO (DE SU ÚLTIMO STRIPE CHECKOUT)
@@ -75,42 +67,32 @@ const createOrder = async (req, res) => {
       endpointSecret
     );
 
-    //console.log(event);
-
     // 3. EVALUAMOS EL EVENTO DE STRIPE
     switch (event.type) {
       // A. SI EL EVENTO FUE UN CARGO EXITOSO AL USUARIO
       case "charge.succeeded":
         // GENERAR VARIABLES PARA ARMAR NUESTRO GUARDADO EN BASE DE DATOS
         const paymentIntent = event.data.object;
-        //console.log(paymentIntent);
+        //console.log("paymentIntent", paymentIntent);
 
         const email = paymentIntent.billing_details.email;
-        //console.log(email);
-
-        const receiptURL = paymentIntent.receipt_url; // https://receipt.stripe.com/12312/!2312/23123
-        console.log(receiptURL);
-
+        const receiptURL = paymentIntent.receipt_url;
         const receiptID = receiptURL
           .split("/")
           .filter((item) => item)
-          .pop(); // !2312
-        console.log(receiptID);
+          .pop();
 
         const amount = paymentIntent.amount;
-        //console.log(amount);
-
-        const date_created = paymentIntent.created;
-        //console.log(date_created);
+        const dateCreated = paymentIntent.created;
 
         const paymentDB = await User.findOneAndUpdate(
           { email },
           {
             $push: {
               receipts: {
-                receiptID,
                 receiptURL,
-                date_created,
+                receiptID,
+                dateCreated,
                 amount,
               },
             },
@@ -118,7 +100,24 @@ const createOrder = async (req, res) => {
           { new: true }
         ).lean();
 
-        console.log(paymentDB);
+        console.log("paymentDB", paymentDB);
+
+        try {
+          await emailController.sendEmail({
+            email,
+            amount,
+            dateCreated,
+            receiptID,
+            receiptURL,
+          });
+        } catch (error) {
+          console.error("Error al enviar el correo electrónico:", error);
+          // Manejar el error y enviar una respuesta adecuada al cliente
+          return res.status(500).json({
+            msg: "Hubo un error al enviar el correo electrónico",
+            error: error.message,
+          });
+        }
 
         res.status(200).json({
           msg: "Datos actualizados con éxito. Pago correcto.",
@@ -132,12 +131,11 @@ const createOrder = async (req, res) => {
           msg: "Evento sin coincidencia",
         });
     }
-
-    return;
   } catch (error) {
-    console.log("error en el manejo de eventos", error);
+    console.log("Error en la generación de recibos para el usuario:", error);
     res.status(500).json({
       msg: "Hubo un problema en la generación de recibos para el usuario.",
+      error: error.message,
     });
   }
 };
@@ -146,19 +144,16 @@ const editCart = async (req, res) => {
   const userID = req.user.id;
 
   try {
-    console.log("userID", userID);
+    //console.log("userID", userID);
 
     const foundUser = await User.findById(userID).lean();
-    console.log("foundUser", foundUser);
     const { products } = req.body;
-    console.log("products", products);
 
     const updateCart = await Cart.findOneAndUpdate(
       foundUser.cart,
       { products },
       { new: true }
     );
-    console.log("updateCart", updateCart);
 
     res.status(200).json({
       msg: "carrito actualizado",

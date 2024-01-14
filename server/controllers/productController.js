@@ -6,8 +6,6 @@ dotenv.config();
 
 const stripeKey = stripe(process.env.STRIPE_SECRET_KEY);
 
-//console.log(stripeKey);
-
 const readAll = async (req, res) => {
   try {
     const playeras = await Products.find();
@@ -53,8 +51,6 @@ const readOne = async (req, res) => {
 const create = async (req, res) => {
   const { name, currency, prices, img, description, slug } = req.body;
 
-  console.log(req.body);
-
   // A. GENERACIÓN DE PRODUCTO EN STRIPE
   // 1. CREAR EL PRODUCTO EN STRIPE
 
@@ -68,8 +64,6 @@ const create = async (req, res) => {
         slug,
       },
     });
-
-    console.log("product", product);
 
     // 2. CREAR PRECIOS PARA EL PRODUCTO DE STRIPE
     const stripePrices = await Promise.all(
@@ -86,8 +80,6 @@ const create = async (req, res) => {
         });
       })
     );
-
-    console.log("stripePrices", stripePrices);
 
     // 3. CREACIÓN DE PRODUCTO EN BASE DE DATOS
     // A. ADAPTACIÓN DE VARIABLE. EN LUGAR DE PASAR LOS 50 MIL PROPIEDADES. SOLO NECESITO 4 PARA LA BASE DE DATOS CON RESPECTO A PRICING.
@@ -128,7 +120,6 @@ const create = async (req, res) => {
 
 const edit = async (req, res) => {
   const { id } = req.params;
-
   const { name } = req.body;
 
   try {
@@ -148,6 +139,7 @@ const edit = async (req, res) => {
     console.log(error);
     res.status(500).json({
       msg: "Hubo un error obteniendo los datos.",
+      error,
     });
   }
 };
@@ -171,7 +163,7 @@ const deleteOne = async (req, res) => {
       data: deletedProduct,
     });
   } catch (error) {
-    console.log(error);
+    console.log("error", error);
     res.status(500).json({
       msg: "Hubo un error obteniendo los datos.",
     });
