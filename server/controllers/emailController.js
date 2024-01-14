@@ -9,7 +9,7 @@ const sendEmail = async ({
   receiptID,
   receiptURL,
 }) => {
-  //console.log("entrando a sendEmail");
+  console.log("entrando a sendEmail");
   //console.log("clientEmail", email);
   //console.log("amount", amount);
   //console.log("receiptURL", receiptURL);

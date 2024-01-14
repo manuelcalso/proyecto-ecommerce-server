@@ -110,6 +110,7 @@ const createOrder = async (req, res) => {
             receiptID,
             receiptURL,
           });
+          console.log("enviando datos a sendEmail");
         } catch (error) {
           console.error("Error al enviar el correo electrónico:", error);
           // Manejar el error y enviar una respuesta adecuada al cliente
