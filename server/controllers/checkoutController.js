@@ -74,7 +74,8 @@ const createOrder = async (req, res) => {
         // GENERAR VARIABLES PARA ARMAR NUESTRO GUARDADO EN BASE DE DATOS
         const paymentIntent = event.data.object;
         //console.log("paymentIntent", paymentIntent);
-
+        const name = paymentIntent.billing_details.name;
+        console.log("name", name);
         const email = paymentIntent.billing_details.email;
         const receiptURL = paymentIntent.receipt_url;
         const receiptID = receiptURL
@@ -86,7 +87,7 @@ const createOrder = async (req, res) => {
         const dateCreated = paymentIntent.created;
 
         const paymentDB = await User.findOneAndUpdate(
-          { email },
+          { name, email },
           {
             $push: {
               receipts: {
@@ -104,13 +105,13 @@ const createOrder = async (req, res) => {
 
         try {
           await emailController.sendEmail({
+            name,
             email,
             amount,
             dateCreated,
             receiptID,
             receiptURL,
           });
-          console.log("enviando datos a sendEmail");
         } catch (error) {
           console.error("Error al enviar el correo electrónico:", error);
           // Manejar el error y enviar una respuesta adecuada al cliente
