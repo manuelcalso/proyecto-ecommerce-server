@@ -8,7 +8,7 @@ dotenv.config();
 const stripeKey = stripe(process.env.STRIPE_SECRET_KEY);
 
 const createCheckoutSession = async (req, res) => {
-  //console.log("accediste....");
+  console.log("accediste....");
 
   // 1. OBTENER EL USUARIO Y SU ID CON CORREO
 
@@ -53,11 +53,14 @@ const createCheckoutSession = async (req, res) => {
 //generando el bd el recibo
 
 const createOrder = async (req, res) => {
+  console.log("entrando a createOder...");
   try {
     // 1. OBTENER LA FIRMA DE STRIPE SECRETA WEBHOOKS
     // (SIEMPRE ES ASÍ)
     const sig = req.headers["stripe-signature"];
-    const endpointSecret = process.env.STRIPE_WH_SIGNING_SECRET;
+    console.log("sig", sig);
+    const endpointSecret = process.env.STRIPE_WH_MAILERSEND_SECRET;
+    console.log("endpointSecret", endpointSecret);
 
     // 2. CONSTRUIR EL EVENTO CON TODOS LOS DATOS SENSIBLES DE STRIPE
     // EL EVENTO ES EL OBJETO QUE INCLUYE LOS RECIBOS Y LAS CONFIRMACIONES DE PAGO DEL USUARIO (DE SU ÚLTIMO STRIPE CHECKOUT)
@@ -66,6 +69,7 @@ const createOrder = async (req, res) => {
       sig,
       endpointSecret
     );
+    console.log("even", event);
 
     // 3. EVALUAMOS EL EVENTO DE STRIPE
     switch (event.type) {
