@@ -9,11 +9,12 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  cart: {
-    type: mongoose.Types.ObjectId,
-    ref: "Cart",
-    default: [],
-  },
+  cart: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Cart",
+    },
+  ],
   country: {
     type: String,
     default: "",

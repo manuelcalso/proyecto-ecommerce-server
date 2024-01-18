@@ -138,4 +138,38 @@ const verifyToken = async (req, res) => {
   }
 };
 
-export default { readAll, create, login, verifyToken };
+const changePassword = async (req, res) => {
+  const { email, password, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    console.log("user", user);
+    if (!user) {
+      return res.status(404).json({ msg: "Usuario no encontrado" });
+    }
+    const dbUserPassword = password;
+    const verifiedPass = await bcryptjs.compare(newPassword, dbUserPassword);
+
+    if (verifiedPass) {
+      return res.status(400).json({
+        msg: "La nueva contraseña no puede ser igual a la contraseña actual",
+      });
+    } else {
+      const salt = await bcryptjs.genSalt(10);
+      console.log("salt", salt);
+      const hashedPassword = await bcryptjs.hash(newPassword, salt);
+      console.log("hashedPassword", hashedPassword);
+      user.password = hashedPassword;
+      await user.save();
+
+      return res.json({ msg: "Contraseña actualizada exitosamente" });
+    }
+  } catch (error) {
+    console.error("error", error);
+    return res
+      .status(500)
+      .json({ msg: "Error en el servidor al cambiar la contraseña" });
+  }
+};
+
+export default { readAll, create, login, verifyToken, changePassword };

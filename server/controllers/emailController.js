@@ -2,20 +2,8 @@ import dotenv from "dotenv";
 import { MailerSend, EmailParams, Sender, Recipient } from "mailersend";
 dotenv.config();
 
-const sendEmail = async ({
-  name,
-  email,
-  amount,
-  dateCreated,
-  receiptID,
-  receiptURL,
-}) => {
-  console.log("entrando a sendEmail");
-  console.log("name: ", name);
-  console.log("clientEmail", email);
-  //console.log("amount", amount);
-  console.log("receiptURL", receiptURL);
-  //console.log("dateCreated", dateCreated);
+const sendEmail = async ({ name, email, amount, receiptURL }) => {
+  console.log("entrando a sendEmail...");
 
   try {
     const mailerSend = new MailerSend({

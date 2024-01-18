@@ -16,5 +16,7 @@ router.post("/login", usersController.login);
 //autorizacion de usuario
 //integracion de middlewares
 router.get("/verifytoken", authorization, usersController.verifyToken);
+//cambio de contraseña
+router.post("/changepassword", usersController.changePassword);
 
 export default router;

@@ -58,9 +58,7 @@ const createOrder = async (req, res) => {
     // 1. OBTENER LA FIRMA DE STRIPE SECRETA WEBHOOKS
     // (SIEMPRE ES ASÍ)
     const sig = req.headers["stripe-signature"];
-    console.log("sig", sig);
-    const endpointSecret = process.env.STRIPE_WH_MAILERSEND_SECRET;
-    console.log("endpointSecret", endpointSecret);
+    const endpointSecret = process.env.STRIPE_WH_SIGNING_SECRET;
 
     // 2. CONSTRUIR EL EVENTO CON TODOS LOS DATOS SENSIBLES DE STRIPE
     // EL EVENTO ES EL OBJETO QUE INCLUYE LOS RECIBOS Y LAS CONFIRMACIONES DE PAGO DEL USUARIO (DE SU ÚLTIMO STRIPE CHECKOUT)
@@ -69,7 +67,6 @@ const createOrder = async (req, res) => {
       sig,
       endpointSecret
     );
-    console.log("even", event);
 
     // 3. EVALUAMOS EL EVENTO DE STRIPE
     switch (event.type) {
@@ -105,7 +102,7 @@ const createOrder = async (req, res) => {
           { new: true }
         ).lean();
 
-        console.log("paymentDB", paymentDB);
+        console.log(paymentDB);
 
         try {
           await emailController.sendEmail({
@@ -152,20 +149,29 @@ const editCart = async (req, res) => {
   try {
     //console.log("userID", userID);
 
-    const foundUser = await User.findById(userID).lean();
+    const foundUser = await User.findById(userID);
     const { products } = req.body;
 
+    if (!foundUser) {
+      return res.status(404).json({ msg: "Usuario no encontrado" });
+    }
+
     const updateCart = await Cart.findOneAndUpdate(
-      foundUser.cart,
+      { _id: foundUser.cart },
       { products },
       { new: true }
     );
+
+    if (!updateCart) {
+      return res.status(404).json({ msg: "Carrito no encontrado" });
+    }
 
     res.status(200).json({
       msg: "carrito actualizado",
       updateCart,
     });
   } catch (error) {
+    console.log("error", error);
     res.status(500).json({
       msg: "hubo un error en servi",
     });
